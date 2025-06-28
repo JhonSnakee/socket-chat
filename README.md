@@ -54,7 +54,7 @@ socket-chat/
 ```bash
     npm install
 ```
-2. **Arranca el servidor**
+3. **Arranca el servidor**
 ```bash    
     npm start
 ```
