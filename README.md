@@ -55,13 +55,8 @@ socket-chat/
     npm install
 ```
 2. **Arranca el servidor**
-    # modo producción
 ```bash    
     npm start
-```
-    # o modo desarrollo con recarga automática
-```bash    
-    npm run dev
 ```
 4. **Abre tu navegador** 
     en http://localhost:8000, pon tu nombre y la sala… ¡y a conversar! Para probar en grupo, abre otra pestaña/ventana (o dispositivo) con otro nombre y la misma sala.
