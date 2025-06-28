@@ -25,6 +25,8 @@ Permite a los usuarios unirse a distintas salas, enviar mensajes públicos o pri
 ---
 
 ## 📂 Estructura de carpetas
+
+```
 socket-chat/
 ├── classes/ # Gestión de usuarios (usuarios.js)
 ├── public/ # Front estático (HTML, CSS, JS, assets)
@@ -37,6 +39,7 @@ socket-chat/
 ├── server.js # Servidor Express + Socket.IO
 ├── package.json
 └── .gitignore
+```
 
 ---
 
