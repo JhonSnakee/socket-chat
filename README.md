@@ -46,16 +46,23 @@ socket-chat/
 ## 📦 Instalación y ejecución
 
 1. **Clona el repo**
-   ```bash
+```bash
    git clone https://github.com/tu-usuario/socket-chat.git
    cd socket-chat
+```
 2. **Instala dependencias**
+```bash
     npm install
+```
 2. **Arranca el servidor**
     # modo producción
+```bash    
     npm start
+```
     # o modo desarrollo con recarga automática
+```bash    
     npm run dev
+```
 4. **Abre tu navegador** 
     en http://localhost:8000, pon tu nombre y la sala… ¡y a conversar! Para probar en grupo, abre otra pestaña/ventana (o dispositivo) con otro nombre y la misma sala.
 
