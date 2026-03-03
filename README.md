@@ -1,76 +1,93 @@
-# 💬 Socket Chat
+# Socket Chat
 
-Chat web en tiempo real construido con **Node.js**, **Express** y **Socket.IO**.  
-Permite a los usuarios unirse a distintas salas, enviar mensajes públicos o privados y ver quién está conectado… todo al instante.
+Aplicación de chat en tiempo real construida con Node.js, Express y Socket.IO. Permite a múltiples usuarios unirse a salas de chat, enviar mensajes y comunicarse de forma privada.
 
----
+## Características
 
-## 🚀 Funcionalidades
-- Salas de chat ilimitadas.
-- Mensajes públicos (sala) y privados (1:1).
-- Lista dinámica de usuarios online.
-- Notificaciones de conexión y desconexión.
-- Scroll inteligente al último mensaje.
-- UI ligera con HTML, CSS y jQuery.
+- Unirse a salas de chat con nombre de usuario personalizado
+- Múltiples salas de chat simultáneas
+- Mensajes en tiempo real mediante WebSockets
+- Lista de usuarios conectados por sala
+- Notificaciones cuando un usuario entra o abandona la sala
+- Mensajes privados entre usuarios
+- Interfaz responsive con Bootstrap
 
----
+## Tecnologías
 
-## 🛠️ Tecnologías principales
-| Back‑end | Front‑end | Dev tools |
-|----------|-----------|-----------|
-| Node.js  | HTML5     | Nodemon |
-| Express  | CSS3      | npm      |
-| Socket.IO| jQuery    | Git      |
+| Capa | Tecnología |
+|------|------------|
+| Backend | Node.js, Express, Socket.IO |
+| Frontend | HTML5, CSS3, Bootstrap 4, jQuery |
+| Dev tool | Nodemon |
 
----
-
-## 📂 Estructura de carpetas
+## Estructura del proyecto
 
 ```
 socket-chat/
-├── classes/ # Gestión de usuarios (usuarios.js)
-├── public/ # Front estático (HTML, CSS, JS, assets)
-│ ├── index.html
-│ ├── chat.html
-│ └── js/
-├── sockets/ # Lógica de eventos Socket.IO
-│ └── socket.js
-├── utils/ # Helpers (crear-mensaje.js)
-├── server.js # Servidor Express + Socket.IO
-├── package.json
-└── .gitignore
+├── server/
+│   ├── server.js             # Servidor Express + Socket.IO
+│   ├── classes/
+│   │   └── usuarios.js       # Clase para gestión de usuarios conectados
+│   ├── sockets/
+│   │   └── socket.js         # Eventos de Socket.IO
+│   └── utils/
+│       └── utils.js          # Función helper para crear mensajes
+└── public/
+    ├── index.html            # Página de login (elegir nombre y sala)
+    ├── chat.html             # Página principal del chat
+    ├── css/                  # Estilos
+    └── js/                   # Lógica del cliente
 ```
 
----
+## Instalación
 
-## 📦 Instalación y ejecución
+1. Clonar el repositorio:
 
-1. **Clona el repo**
 ```bash
-   git clone https://github.com/tu-usuario/socket-chat.git
-   cd socket-chat
+git clone <url-del-repositorio>
+cd socket-chat
 ```
-2. **Instala dependencias**
+
+2. Instalar dependencias:
+
 ```bash
-    npm install
+npm install
 ```
-3. **Arranca el servidor**
-```bash    
-    npm start
+
+## Uso
+
+Iniciar el servidor:
+
+```bash
+npm start
 ```
-4. **Abre tu navegador** 
-    en http://localhost:8000, pon tu nombre y la sala… ¡y a conversar! Para probar en grupo, abre otra pestaña/ventana (o dispositivo) con otro nombre y la misma sala.
+
+El servidor se levanta en [http://localhost:8000](http://localhost:8000) por defecto.  
+Se puede cambiar el puerto mediante la variable de entorno `PORT`:
+
+```bash
+PORT=3000 npm start
+```
+
+Luego abrir el navegador, ingresar un **nombre de usuario** y el nombre de la **sala** a la que se quiere unir.
+
+## Eventos de Socket.IO
+
+| Evento | Dirección | Descripción |
+|--------|-----------|-------------|
+| `entrarChat` | Cliente → Servidor | Unirse a una sala con nombre y sala |
+| `crearMensaje` | Bidireccional | Enviar/recibir mensajes en la sala |
+| `listaPersonas` | Servidor → Cliente | Lista actualizada de usuarios en la sala |
+| `mensajePrivado` | Cliente → Servidor | Enviar mensaje privado a otro usuario |
+| `disconnect` | Automático | Notifica salida del usuario a la sala |
+
+## Requisitos
+
+- Node.js v12 o superior
+- npm
 
 ---
 
-## 🧪 Scripts útiles
-
-Comando	Descripción
-npm start	Inicia servidor en PORT (por defecto 8000).
-npm run dev	Inicia servidor con nodemon para recarga en caliente.
-
----
-
-## 📬 Contacto
+## 👤 Autor
 
 > Desarrollado con cariño por [@JhonSnakee](https://github.com/JhonSnakee)
