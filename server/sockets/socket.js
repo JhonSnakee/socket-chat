@@ -1,50 +1,203 @@
-const {io} = require('../server');
-const {Usuarios} = require('../classes/usuarios');
-const {crearMensaje} = require('../utils/utils');
+'use strict';
 
+const { UserManager } = require('../classes/UserManager');
+const { MessageHistory } = require('../classes/MessageHistory');
+const { crearMensaje } = require('../utils/messageUtils');
+const { validateJoinPayload, validateMessage, validateAvatarPayload, DEFAULT_AVATAR } = require('../utils/sanitize');
+const logger = require('../utils/logger');
 
-const usuarios = new Usuarios();
+/** @type {Map<string, ReturnType<typeof setTimeout>>} socket id → typing timeout */
+const typingTimers = new Map();
 
-io.on('connection', (client) => {
+const TYPING_TIMEOUT_MS = 3000;
 
-    client.on('entrarChat',(data,callback) => {
-        if(!data.nombre || !data.sala){
-            return callback({
-                error: true,
-                mensaje: 'El nombre y/o sala es necesario'
-            });
-        };
-        
-        client.join(data.sala);
+/**
+ * Registers all Socket.IO event handlers.
+ *
+ * @param {import('socket.io').Server} io
+ */
+function registerSocketHandlers(io) {
+  const userManager = new UserManager();
+  const messageHistory = new MessageHistory();
 
-        usuarios.agregarPersona(client.id, data.nombre, data.sala);
+  io.on('connection', (socket) => {
+    logger.debug(`Socket connected: ${socket.id}`);
 
-        client.broadcast.to(data.sala).emit('listaPersonas', usuarios.getPersonasPorSala(data.sala));
-        client.broadcast.to(data.sala).emit('crearMensaje',crearMensaje('Admin', `${data.nombre} entro al chat`));
+    // ─────────────────────────────────────────────────────────────
+    // ENTER CHAT
+    // ─────────────────────────────────────────────────────────────
+    socket.on('entrarChat', (data, callback) => {
+      const { isValid, errors, sanitized } = validateJoinPayload(data);
 
-        callback(usuarios.getPersonasPorSala(data.sala));
+      if (!isValid) {
+        return callback({ error: true, mensaje: errors.join(' ') });
+      }
+
+      const { nombre, sala } = sanitized;
+
+      if (userManager.getUser(socket.id)) {
+        return callback({ error: true, mensaje: 'Ya estás en el chat.' });
+      }
+
+      const { avatar } = sanitized;
+      userManager.addUser(socket.id, nombre, sala, avatar);
+      socket.join(sala);
+
+      logger.info(`User "${nombre}" joined room "${sala}" (${socket.id})`);  
+
+      const usersInRoom = userManager.getUsersByRoom(sala);
+      const history = messageHistory.getByRoom(sala);
+
+      const systemMsg = crearMensaje('Admin', `${nombre} se unió al chat`, 'system');
+      messageHistory.add(sala, systemMsg);
+      socket.to(sala).emit('crearMensaje', systemMsg);
+      socket.to(sala).emit('listaPersonas', usersInRoom);
+
+      callback({ usuarios: usersInRoom, historial: history });
     });
 
-    client.on('crearMensaje', (data, callback) => {
+    // ─────────────────────────────────────────────────────────────
+    // PUBLIC MESSAGE
+    // ─────────────────────────────────────────────────────────────
+    socket.on('crearMensaje', (data, callback) => {
+      const user = userManager.getUser(socket.id);
 
-        let persona = usuarios.getPersona(client.id)
+      if (!user) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: 'No estás autenticado en el chat.' });
+      }
 
-        let mensaje = crearMensaje(persona.nombre, data.mensaje);
-        client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
+      const { isValid, errors, sanitized } = validateMessage(data);
 
-        callback(mensaje);
+      if (!isValid) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: errors.join(' ') });
+      }
+
+      const mensaje = crearMensaje(user.nombre, sanitized.mensaje, 'public', user.avatar);
+      messageHistory.add(user.sala, mensaje);
+
+      socket.to(user.sala).emit('crearMensaje', mensaje);
+
+      logger.debug(`[${user.sala}] ${user.nombre}: ${sanitized.mensaje}`);
+
+      if (typeof callback === 'function') callback(mensaje);
     });
 
-    client.on('disconnect', () => {
-        let pBorrada = usuarios.borrarPersona(client.id);
-        
-        client.broadcast.to(pBorrada.sala).emit('crearMensaje',crearMensaje('Admin', `${pBorrada.nombre} abandono el chat`));
-        client.broadcast.to(pBorrada.sala).emit('listaPersonas', usuarios.getPersonasPorSala(pBorrada.sala));
+    // ─────────────────────────────────────────────────────────────
+    // PRIVATE MESSAGE
+    // ─────────────────────────────────────────────────────────────
+    socket.on('mensajePrivado', (data, callback) => {
+      const sender = userManager.getUser(socket.id);
+
+      if (!sender) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: 'No autenticado.' });
+      }
+
+      const { isValid, errors, sanitized } = validateMessage(data);
+
+      if (!isValid || !data.para) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: errors.join(' ') || 'Destinatario requerido.' });
+      }
+
+      const recipient = userManager.getUser(data.para);
+
+      if (!recipient) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: 'El usuario ya no está conectado.' });
+      }
+
+      const mensaje = crearMensaje(sender.nombre, sanitized.mensaje, 'private', sender.avatar);
+      io.to(data.para).emit('mensajePrivado', { ...mensaje, de: sender.nombre, avatar: sender.avatar });
+
+      logger.debug(`Private: ${sender.nombre} → ${recipient.nombre}: ${sanitized.mensaje}`);
+
+      if (typeof callback === 'function') callback(mensaje);
     });
 
-    client.on('mensajePrivado', data => {
-        let persona = usuarios.getPersona(client.id);
-        client.broadcast.to(data.para).emit('mensajePrivado', crearMensaje(persona.nombre, data.mensaje));
+    // ─────────────────────────────────────────────────────────────
+    // UPDATE AVATAR
+    // ─────────────────────────────────────────────────────────────
+    socket.on('actualizarAvatar', (data, callback) => {
+      const user = userManager.getUser(socket.id);
+
+      if (!user) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: 'No autenticado.' });
+      }
+
+      const { isValid, error, avatar } = validateAvatarPayload(data);
+
+      if (!isValid) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: error });
+      }
+
+      userManager.updateAvatar(socket.id, avatar);
+      logger.info(`User "${user.nombre}" updated avatar → ${avatar}`);
+
+      const systemMsg = crearMensaje('Admin', `${user.nombre} actualizó su foto de perfil`, 'system', DEFAULT_AVATAR);
+      messageHistory.add(user.sala, systemMsg);
+
+      socket.to(user.sala).emit('crearMensaje', systemMsg);
+      socket.to(user.sala).emit('listaPersonas', userManager.getUsersByRoom(user.sala));
+
+      if (typeof callback === 'function') callback({ error: false, avatar });
     });
 
-});
+    // ─────────────────────────────────────────────────────────────
+    // TYPING INDICATOR
+    // ─────────────────────────────────────────────────────────────
+    socket.on('escribiendo', () => {
+      const user = userManager.getUser(socket.id);
+      if (!user) return;
+
+      if (typingTimers.has(socket.id)) {
+        clearTimeout(typingTimers.get(socket.id));
+      }
+
+      socket.to(user.sala).emit('escribiendo', { nombre: user.nombre });
+
+      const timer = setTimeout(() => {
+        socket.to(user.sala).emit('dejóDeEscribir', { nombre: user.nombre });
+        typingTimers.delete(socket.id);
+      }, TYPING_TIMEOUT_MS);
+
+      typingTimers.set(socket.id, timer);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // DISCONNECT
+    // ─────────────────────────────────────────────────────────────
+    socket.on('disconnect', (reason) => {
+      if (typingTimers.has(socket.id)) {
+        clearTimeout(typingTimers.get(socket.id));
+        typingTimers.delete(socket.id);
+      }
+
+      const user = userManager.removeUser(socket.id);
+
+      if (!user) {
+        logger.debug(`Socket disconnected before joining: ${socket.id} (${reason})`);
+        return;
+      }
+
+      logger.info(`User "${user.nombre}" left room "${user.sala}" – reason: ${reason}`);
+
+      const systemMsg = crearMensaje('Admin', `${user.nombre} abandonó el chat`, 'system');
+      messageHistory.add(user.sala, systemMsg);
+
+      socket.to(user.sala).emit('crearMensaje', systemMsg);
+      socket.to(user.sala).emit('listaPersonas', userManager.getUsersByRoom(user.sala));
+
+      if (userManager.getUsersByRoom(user.sala).length === 0) {
+        messageHistory.clearRoom(user.sala);
+        logger.debug(`Room "${user.sala}" is now empty – history cleared.`);
+      }
+    });
+  });
+}
+
+module.exports = { registerSocketHandlers };

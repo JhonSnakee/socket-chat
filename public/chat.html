@@ -1,133 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="icon" type="image/jpg" href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png" />
-    <title>Chat</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link
+    rel="icon"
+    type="image/png"
+    href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png"
+  />
+  <title>Chat</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous"
+  />
 
-    <!-- Page CSS -->
-    <link href="css/pages/chat-app-page.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="css/style.css" rel="stylesheet">
-    <link href="css/chat.css" rel="stylesheet">
-    <link href="css/animate.css" rel="stylesheet">
-
-    <!-- You can change the theme colors from here -->
-    <link href="css/colors/default-dark.css" id="theme" rel="stylesheet">
+  <!-- Page CSS -->
+  <link href="css/pages/chat-app-page.css" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/chat.css" rel="stylesheet" />
+  <link href="css/animate.css" rel="stylesheet" />
+  <link href="css/colors/default-dark.css" id="theme" rel="stylesheet" />
+  <!-- Chat page custom -->
+  <link href="css/chat-custom.css" rel="stylesheet" />
 </head>
 
 <body class="fix-header single-column card-no-border fix-sidebar">
 
-    <!-- ============================================================== -->
-    <!-- Main wrapper -->
-    <!-- ============================================================== -->
-    <div id="main-wrapper">
+  <div id="main-wrapper">
+    <div class="page-wrapper">
+      <div class="container-fluid">
+        <div class="row animated fadeIn">
+          <div class="col-12">
+            <div class="card m-b-0">
 
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
-        <div class="page-wrapper">
+              <div class="chat-main-box">
 
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
-            <div class="container-fluid">
-
-
-                <!-- ============================================================== -->
-                <!-- Start Page Content -->
-                <!-- ============================================================== -->
-                <div class="row animated fadeIn">
-                    <div class="col-12">
-                        <div class="card m-b-0">
-                            <!-- .chat-row -->
-                            <div class="chat-main-box">
-                                <!-- .chat-left-panel -->
-                                <div class="chat-left-aside">
-                                    <div class="open-panel"><i class="ti-angle-right"></i></div>
-                                    <div class="chat-left-inner">
-                                        <div class="form-material">
-                                            <input class="form-control p-20" type="text" placeholder="Buscar Contacto">
-                                        </div>
-                                        <ul class="chatonline style-none" id="divUsuarios"> </ul>
-                                    </div>
-                                </div>
-                                <!-- .chat-left-panel -->
-                                <!-- .chat-right-panel -->
-                                <div class="chat-right-aside">
-                                    <div class="chat-main-header">
-                                        <div id="titleChat" class="p-20 b-b">
-                                            <!-- <h3 class="box-title">Sala de chat <small>Video Juegos</small></h3> -->
-                                        </div>
-                                    </div>
-
-                                    <div class="chat-rbox">
-                                        <ul class="chat-list p-20" id="divChatbox"></ul>
-                                    </div>
-                                    <div class="card-body b-t">
-
-                                        <form id="formEnviar">
-                                            <div class="row">
-                                                <div class="col-8">
-                                                    <input autocomplete="off" id="txtMensaje" placeholder="Escribe tu mensaje aquí" class="form-control b-0" autofocus>
-                                                </div>
-                                                <div class="col-4 text-right">
-                                                    <button type="submit" class="btn btn-info btn-circle btn-lg"><i class="fa fa-paper-plane-o"></i> </button>
-                                                </div>
-                                            </div>
-                                        </form>
-
-                                    </div>
-                                </div>
-                                <!-- .chat-right-panel -->
-                            </div>
-                            <!-- /.chat-row -->
-                        </div>
+                <!-- ── Left panel: user list ─────────────────── -->
+                <div class="chat-left-aside">
+                  <div class="open-panel"><i class="ti-angle-right"></i></div>
+                  <div class="chat-left-inner">
+                    <div class="form-material">
+                      <input
+                        id="searchUsers"
+                        class="form-control p-20"
+                        type="text"
+                        placeholder="Buscar usuario…"
+                        autocomplete="off"
+                      />
                     </div>
+                    <ul class="chatonline style-none" id="divUsuarios"></ul>
+                  </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- End PAge Content -->
-                <!-- ============================================================== -->
+
+                <!-- ── Right panel: chat area ────────────────── -->
+                <div class="chat-right-aside">
+
+                  <div class="chat-main-header">
+                    <div class="chat-header-bar p-20 b-b">
+                      <div id="titleChat"></div>
+                      <div class="chat-header-actions">
+                        <button id="btnCambiarAvatar" class="btn btn-outline-secondary btn-sm" title="Cambiar avatar" data-toggle="modal" data-target="#modalAvatar">
+                          <i class="fa fa-user-circle-o"></i> Avatar
+                        </button>
+                        <button id="btnSalir" class="btn btn-outline-danger btn-sm" title="Salir del chat">
+                          <i class="fa fa-sign-out"></i> Salir
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="chat-rbox">
+                    <ul class="chat-list p-20" id="divChatbox"></ul>
+                  </div>
+
+                  <!-- Typing indicator lives between the message list and the form -->
+                  <div id="typingIndicator"></div>
+
+                  <div class="card-body b-t">
+                    <form id="formEnviar">
+                      <div class="row align-items-center">
+                        <div class="col-9">
+                          <input
+                            autocomplete="off"
+                            id="txtMensaje"
+                            placeholder="Escribe tu mensaje aquí"
+                            class="form-control b-0"
+                            maxlength="500"
+                            autofocus
+                          />
+                        </div>
+                        <div class="col-3 text-right">
+                          <button type="submit" class="btn btn-info btn-circle btn-lg" title="Enviar">
+                            <i class="fa fa-paper-plane-o"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+
+                </div>
+                <!-- ── End right panel ───────────────────────── -->
+
+              </div>
 
             </div>
-            <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer">
-                Super Chat - Jhon Murillo
-            </footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
+          </div>
         </div>
-        <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
+      </div>
+
+      <footer class="footer text-center p-2">
+        Socket Chat &copy; 2026
+      </footer>
     </div>
-    <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
+  </div>
 
+  <!-- Scripts – ORDER MATTERS -->
+  <script src="js/libs/jquery.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/popper.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+  <script src="socket.io/socket.io.js"></script>
 
+  <!-- Avatar picker modal -->
+  <div class="modal fade" id="modalAvatar" tabindex="-1" role="dialog" aria-labelledby="modalAvatarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAvatarLabel">Cambiar avatar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="avatar-grid" id="avatarPickerChat"></div>
+          <div class="text-center mt-3">
+            <label for="avatarUploadChat" class="btn btn-outline-secondary btn-sm btn-block">
+              <i class="fa fa-upload"></i> Subir mi foto…
+            </label>
+            <input
+              type="file"
+              id="avatarUploadChat"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              class="d-none"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-
-
-    <script src="js/libs/jquery.min.js"></script>
-    <script src="socket.io/socket.io.js"></script>
-
-    <script src="js/socket-chat-jquery.js"></script>
-
-    <script src="js/socket-chat.js"></script>
+  <!-- UI module must be loaded before the socket module -->
+  <script src="js/socket-chat-jquery.js"></script>
+  <script src="js/socket-chat.js"></script>
+  <script src="js/chat-init.js"></script>
 
 </body>
-
 </html>
