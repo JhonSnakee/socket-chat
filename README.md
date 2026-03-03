@@ -1,226 +1,175 @@
 # Socket Chat
 
-Real-time, multi-room chat application built with **Node.js**, **Express** and **Socket.IO**.
+Chat en tiempo real multi-sala construido con **Node.js**, **Express** y **Socket.IO**.
+
+![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-green)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-4.8-blue)
+![License](https://img.shields.io/badge/license-ISC-lightgrey)
 
 ---
 
-## Features
+## Características
 
-- **Multi-room support** – users join independent rooms; zero cross-room bleed.
-- **Message history** – last 50 messages are replayed to every new joiner (no DB required).
-- **Typing indicators** – debounced "X is typing…" signal broadcast to room peers.
-- **Private messages** – click any user in the sidebar to enter DM mode (Esc to cancel).
-- **XSS-safe rendering** – all user-generated text is rendered via `textContent` / `createTextNode`; raw HTML injection is impossible.
-- **Input validation & sanitisation** – server-side validator rejects empty, oversized, or HTML-encoded payloads.
-- **Security hardened** – Helmet CSP headers, CORS restrictions, express-rate-limit, and proper HTTP security headers out of the box.
-- **Structured logging** – Winston logger with colourised dev output and JSON production format.
-- **Graceful shutdown** – SIGTERM / SIGINT handler closes Socket.IO and HTTP server cleanly.
-- **Unread badge** – browser tab title shows unread count when the window is not focused.
-- **Client-side search** – live filter on the connected-users sidebar.
-- **Health endpoint** – `GET /health` for load-balancer / Docker readiness probes.
+- **Salas independientes** — cada usuario elige un nombre de sala; los mensajes son aislados por sala
+- **Mensajes privados** — haz clic en un usuario de la lista para enviarle un mensaje directo
+- **Historial de mensajes** — los últimos 50 mensajes de cada sala se entregan al conectarse
+- **Indicador de escritura** — notificación en tiempo real cuando alguien está escribiendo
+- **Selección de avatar** — 7 avatares predeterminados o foto personalizada (sesión actual, ≤ 220 KB)
+- **Cambio de avatar en el chat** — modal de selector disponible desde la cabecera del chat
+- **Botón de salida** — abandona la sala limpiamente sin cerrar el navegador
+- **Protección XSS** — todos los mensajes se insertan via DOM, nunca `innerHTML` con strings
+- **Content Security Policy** — Helmet CSP configurado con cabeceras estrictas
+- **Rate limiting** — 200 peticiones por ventana de 15 minutos
+- **Health check** — `GET /health` para balanceadores de carga o Docker
 
 ---
 
-## Tech Stack
+## Stack tecnológico
 
-| Layer | Technology |
+| Capa | Tecnología |
 |---|---|
-| Runtime | Node.js ≥ 18 |
-| HTTP server | Express 4 |
-| WebSocket | Socket.IO 4 |
-| Security | Helmet, CORS, express-rate-limit |
-| Logging | Winston, Morgan |
-| Validation | validator.js |
-| Frontend | HTML5, Bootstrap 4, jQuery 3 |
-| Dev server | Nodemon |
+| Servidor | Node.js ≥ 18, Express 4 |
+| WebSockets | Socket.IO 4.8 |
+| Seguridad | Helmet, CORS, express-rate-limit |
+| Logging | Winston + Morgan |
+| Validación | validator.js + sanitización propia |
+| Frontend | Bootstrap 4, jQuery 3, Font Awesome |
+| Variables de entorno | dotenv |
+| Dev | nodemon |
 
 ---
 
-## Project Structure
+## Requisitos previos
 
-```
-socket-chat/
-├── server/
-│   ├── server.js                  # Entry point – Express, middleware, graceful shutdown
-│   ├── config/
-│   │   └── config.js              # Centralised env-var configuration
-│   ├── middleware/
-│   │   └── security.js            # Helmet, CORS, rate-limit, Morgan
-│   ├── classes/
-│   │   ├── UserManager.js         # In-memory connected-user registry
-│   │   └── MessageHistory.js      # Capped per-room message history
-│   ├── sockets/
-│   │   └── socket.js              # All Socket.IO event handlers
-│   └── utils/
-│       ├── logger.js              # Winston logger (dev + prod formats)
-│       ├── messageUtils.js        # Message factory + time formatter
-│       └── sanitize.js            # Input validation & sanitisation helpers
-└── public/
-    ├── index.html                 # Join screen – live validation, URLSearchParams nav
-    ├── chat.html                  # Chat page – typing indicator, private mode, search
-    ├── css/                       # Theme + custom styles
-    └── js/
-        ├── socket-chat-jquery.js  # UI module (XSS-safe DOM construction)
-        └── socket-chat.js         # Socket.IO client + event wiring
-```
+- **Node.js ≥ 18**
+- **npm ≥ 9**
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-- **Node.js** ≥ 18 — [nodejs.org](https://nodejs.org)
-- **npm** ≥ 9 (bundled with Node)
-
-### Installation
+## Instalación
 
 ```bash
-git clone <repo-url>
+# 1. Clona el repositorio
+git clone https://github.com/tu-usuario/socket-chat.git
 cd socket-chat
+
+# 2. Instala las dependencias
 npm install
 ```
 
-### Environment variables
+---
 
-Copy the example file and adjust as needed:
+## Variables de entorno
 
-```bash
-cp .env.example .env
+Crea un archivo `.env` en la raíz del proyecto (opcional — todos los valores tienen default):
+
+```env
+NODE_ENV=development
+PORT=8000
+HOST=0.0.0.0
+
+# En producción, lista de orígenes permitidos separados por coma
+CORS_ORIGINS=https://chat.ejemplo.com
+
+# Rate limiting
+RATE_LIMIT_WINDOW_MS=900000   # 15 minutos
+RATE_LIMIT_MAX=200
+
+# Límites del chat
+MAX_MESSAGE_LENGTH=500
+MAX_USERNAME_LENGTH=30
+MAX_ROOM_NAME_LENGTH=30
+HISTORY_SIZE=50
+TYPING_DEBOUNCE_MS=3000
 ```
 
-| Variable | Default | Description |
-|---|---|---|
-| `NODE_ENV` | `development` | `development` or `production` |
-| `PORT` | `8000` | TCP port the server listens on |
-| `HOST` | `0.0.0.0` | Bind address |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins |
-| `RATE_LIMIT_MAX` | `200` | Max requests per window per IP |
-| `MAX_MESSAGE_LENGTH` | `500` | Maximum chat message characters |
-| `HISTORY_SIZE` | `50` | Messages replayed to new joiners |
+---
 
-### Running
+## Scripts disponibles
+
+| Comando | Descripción |
+|---|---|
+| `npm start` | Inicia el servidor en modo producción |
+| `npm run dev` | Inicia el servidor con nodemon (auto-reinicio) |
+| `npm run lint` | Ejecuta el linter (configura ESLint para habilitar) |
+| `npm test` | Ejecuta los tests (configura Jest/Mocha para habilitar) |
+
+---
+
+## Uso
 
 ```bash
-# Development (hot-reload via Nodemon)
 npm run dev
-
-# Production
-npm start
 ```
 
-Open [http://localhost:8000](http://localhost:8000), enter a **username** and **room name**, then click **Ingresar al chat**.
+Abre el navegador en [http://localhost:8000](http://localhost:8000).
+
+1. Ingresa tu **nombre** y el **nombre de una sala**
+2. Elige un **avatar** (uno de los 7 predeterminados o sube tu propia foto)
+3. Haz clic en **Entrar**
+4. Para chatear en privado, haz clic en el nombre de otro usuario en la lista
 
 ---
-
-## Socket.IO Event Reference
-
-### Client → Server
-
-| Event | Payload | Description |
-|---|---|---|
-| `entrarChat` | `{ nombre, sala }` | Join a room. Callback receives `{ usuarios, historial }`. |
-| `crearMensaje` | `{ mensaje }` | Broadcast a public message to the room. |
-| `mensajePrivado` | `{ para, mensaje }` | Send a DM to the socket ID in `para`. |
-| `escribiendo` | _(none)_ | Signal that the user is typing (debounced). |
-
-### Server → Client
-
-| Event | Payload | Description |
-|---|---|---|
-| `crearMensaje` | `{ nombre, mensaje, fecha, tipo }` | New public or system message. |
-| `mensajePrivado` | `{ de, nombre, mensaje, fecha, tipo }` | Incoming private message. |
-| `listaPersonas` | `Array<{ id, nombre, sala, joinedAt }>` | Updated user list for the room. |
-| `escribiendo` | `{ nombre }` | Peer started typing. |
-| `dejóDeEscribir` | `{ nombre }` | Peer stopped typing (auto after 3 s). |
-
----
-
-## Health Check
-
-```
-GET /health
-→ 200 { "status": "ok", "uptime": <seconds> }
-```
-
----
-
-## Architecture Notes
-
-- **No circular dependency** — `server.js` creates the `io` instance and passes it **explicitly** to `registerSocketHandlers(io)`. The old pattern of `module.exports.io` + `require('../server')` inside `socket.js` created a circular require that could cause subtle boot-order bugs.
-- **Separation of concerns** — config, logging, security middleware, business logic (UserManager, MessageHistory), and transport (socket handlers) are each in their own module.
-- **Memory safety** — `MessageHistory.clearRoom()` is called automatically when the last user leaves a room, preventing unbounded accumulation.
-- **Production upgrade path** — swapping `UserManager` and `MessageHistory` for Redis-backed implementations does not require changing any socket handler code.
-
----
-
-| Dev tool | Nodemon |
 
 ## Estructura del proyecto
 
 ```
 socket-chat/
 ├── server/
-│   ├── server.js             # Servidor Express + Socket.IO
+│   ├── server.js               # Punto de entrada — Express + Socket.IO
+│   ├── config/
+│   │   └── config.js           # Configuración centralizada (lee .env)
 │   ├── classes/
-│   │   └── usuarios.js       # Clase para gestión de usuarios conectados
+│   │   ├── UserManager.js      # Registro de usuarios en memoria (Map)
+│   │   └── MessageHistory.js   # Historial de mensajes por sala
+│   ├── middleware/
+│   │   └── security.js         # Helmet CSP, CORS, rate limiter, Morgan
 │   ├── sockets/
-│   │   └── socket.js         # Eventos de Socket.IO
+│   │   └── socket.js           # Todos los handlers de Socket.IO
 │   └── utils/
-│       └── utils.js          # Función helper para crear mensajes
+│       ├── logger.js           # Winston logger
+│       ├── messageUtils.js     # Factory de mensajes
+│       └── sanitize.js         # Validación y sanitización de payloads
 └── public/
-    ├── index.html            # Página de login (elegir nombre y sala)
-    ├── chat.html             # Página principal del chat
-    ├── css/                  # Estilos
-    └── js/                   # Lógica del cliente
+    ├── index.html              # Página de login
+    ├── chat.html               # Interfaz del chat
+    ├── css/
+    │   ├── login.css           # Estilos de la página de login
+    │   └── chat-custom.css     # Estilos del chat
+    └── js/
+        ├── login.js            # Comportamiento de la página de login
+        ├── socket-chat-jquery.js  # Módulo ChatUI (manipulación del DOM)
+        ├── socket-chat.js         # Módulo Socket (conexión Socket.IO)
+        └── chat-init.js           # Inicialización de la página de chat
 ```
 
-## Instalación
+---
 
-1. Clonar el repositorio:
+## Eventos Socket.IO
 
-```bash
-git clone <url-del-repositorio>
-cd socket-chat
-```
+| Evento (cliente → servidor) | Descripción |
+|---|---|
+| `entrarChat` | Unirse a una sala con `{ nombre, sala, avatar }` |
+| `crearMensaje` | Enviar mensaje público con `{ mensaje }` |
+| `mensajePrivado` | Enviar mensaje privado con `{ para, mensaje }` |
+| `actualizarAvatar` | Cambiar avatar con `{ avatar }` |
+| `escribiendo` | Notificar que el usuario está escribiendo |
 
-2. Instalar dependencias:
+| Evento (servidor → cliente) | Descripción |
+|---|---|
+| `crearMensaje` | Nuevo mensaje (público, privado o de sistema) |
+| `listaPersonas` | Lista actualizada de usuarios en la sala |
+| `escribiendo` | Nombre del usuario que está escribiendo |
 
-```bash
-npm install
-```
+---
 
-## Uso
+## Seguridad
 
-Iniciar el servidor:
-
-```bash
-npm start
-```
-
-El servidor se levanta en [http://localhost:8000](http://localhost:8000) por defecto.  
-Se puede cambiar el puerto mediante la variable de entorno `PORT`:
-
-```bash
-PORT=3000 npm start
-```
-
-Luego abrir el navegador, ingresar un **nombre de usuario** y el nombre de la **sala** a la que se quiere unir.
-
-## Eventos de Socket.IO
-
-| Evento | Dirección | Descripción |
-|--------|-----------|-------------|
-| `entrarChat` | Cliente → Servidor | Unirse a una sala con nombre y sala |
-| `crearMensaje` | Bidireccional | Enviar/recibir mensajes en la sala |
-| `listaPersonas` | Servidor → Cliente | Lista actualizada de usuarios en la sala |
-| `mensajePrivado` | Cliente → Servidor | Enviar mensaje privado a otro usuario |
-| `disconnect` | Automático | Notifica salida del usuario a la sala |
-
-## Requisitos
-
-- Node.js v12 o superior
-- npm
+- **CSP** — restringe orígenes de scripts, estilos, fuentes e imágenes
+- **XSS** — sin `innerHTML` con datos de usuario; todo via nodos DOM
+- **Rate limiting** — 200 req / 15 min por IP
+- **Validación doble** — cliente y servidor validan todos los payloads
+- **Avatar base64** — verificado por prefijo MIME y limitado a 307 200 chars (~220 KB)
 
 ---
 
