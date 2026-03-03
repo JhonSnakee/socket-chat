@@ -61,7 +61,17 @@
                 <div class="chat-right-aside">
 
                   <div class="chat-main-header">
-                    <div id="titleChat" class="p-20 b-b"></div>
+                    <div class="chat-header-bar p-20 b-b">
+                      <div id="titleChat"></div>
+                      <div class="chat-header-actions">
+                        <button id="btnCambiarAvatar" class="btn btn-outline-secondary btn-sm" title="Cambiar avatar" data-toggle="modal" data-target="#modalAvatar">
+                          <i class="fa fa-user-circle-o"></i> Avatar
+                        </button>
+                        <button id="btnSalir" class="btn btn-outline-danger btn-sm" title="Salir del chat">
+                          <i class="fa fa-sign-out"></i> Salir
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="chat-rbox">
@@ -111,7 +121,37 @@
 
   <!-- Scripts – ORDER MATTERS -->
   <script src="js/libs/jquery.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/popper.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
   <script src="socket.io/socket.io.js"></script>
+
+  <!-- Avatar picker modal -->
+  <div class="modal fade" id="modalAvatar" tabindex="-1" role="dialog" aria-labelledby="modalAvatarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAvatarLabel">Cambiar avatar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="avatar-grid" id="avatarPickerChat"></div>
+          <div class="text-center mt-3">
+            <label for="avatarUploadChat" class="btn btn-outline-secondary btn-sm btn-block">
+              <i class="fa fa-upload"></i> Subir mi foto…
+            </label>
+            <input
+              type="file"
+              id="avatarUploadChat"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              class="d-none"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- UI module must be loaded before the socket module -->
   <script src="js/socket-chat-jquery.js"></script>

@@ -5,15 +5,17 @@
  *
  * @param {string} nombre  - Display name of the sender.
  * @param {string} mensaje - Message body (already sanitized).
- * @param {string} [tipo='public'] - 'public' | 'private' | 'system'
- * @returns {{ nombre: string, mensaje: string, fecha: number, tipo: string }}
+ * @param {string} [tipo='public']  - 'public' | 'private' | 'system'
+ * @param {string} [avatar] - Sender's avatar path.
+ * @returns {{ nombre: string, mensaje: string, fecha: number, tipo: string, avatar: string }}
  */
-function crearMensaje(nombre, mensaje, tipo = 'public') {
+function crearMensaje(nombre, mensaje, tipo = 'public', avatar = 'assets/images/users/1.jpg') {
   return {
     nombre,
     mensaje,
     fecha: Date.now(),
     tipo,
+    avatar,
   };
 }
 

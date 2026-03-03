@@ -18,6 +18,18 @@ const ChatUI = (() => {
 
   let nombre = '';
   let sala = '';
+  let ownAvatar = 'assets/images/users/1.jpg';
+
+  /** Must match ALLOWED_AVATARS in server/utils/sanitize.js */
+  const AVATAR_OPTIONS = [
+    'assets/images/users/1.jpg',
+    'assets/images/users/d1.jpg',
+    'assets/images/users/d2.jpg',
+    'assets/images/users/d3.jpg',
+    'assets/images/users/d4.jpg',
+    'assets/images/users/d5.jpg',
+    'assets/images/users/d6.png',
+  ];
 
   // Tracks socket IDs currently clicking for private messages
   let selectedPrivateTarget = null;
@@ -99,7 +111,7 @@ const ChatUI = (() => {
       a.dataset.id = user.id;
 
       const img = document.createElement('img');
-      img.src = 'assets/images/users/1.jpg';
+      img.src = user.avatar || 'assets/images/users/1.jpg'; // ← per-user avatar
       img.alt = 'user';
       img.className = 'img-circle';
 
@@ -169,7 +181,7 @@ const ChatUI = (() => {
       const avatar = document.createElement('div');
       avatar.className = 'chat-img';
       const avatarImg = document.createElement('img');
-      avatarImg.src = 'assets/images/users/1.jpg';
+      avatarImg.src = msg.avatar || ownAvatar;   // ← own avatar at send time
       avatarImg.alt = 'user';
       avatar.appendChild(avatarImg);
 
@@ -211,7 +223,7 @@ const ChatUI = (() => {
       const avatar = document.createElement('div');
       avatar.className = 'chat-img';
       const avatarImg = document.createElement('img');
-      avatarImg.src = 'assets/images/users/1.jpg';
+      avatarImg.src = msg.avatar || 'assets/images/users/1.jpg'; // ← sender's avatar
       avatarImg.alt = 'user';
       avatar.appendChild(avatarImg);
 
@@ -302,17 +314,51 @@ const ChatUI = (() => {
     return selectedPrivateTarget;
   }
 
+  // ── Avatar picker ─────────────────────────────────────────────────────
+
+  /**
+   * Populate an avatar grid container with all available options.
+   * The currently active avatar receives the 'selected' CSS class.
+   *
+   * @param {jQuery} $container    - The grid element to fill.
+   * @param {string} currentAvatar - Path of the currently active avatar.
+   */
+  function populateAvatarPicker($container, currentAvatar) {
+    $container.empty();
+    const frag = document.createDocumentFragment();
+    AVATAR_OPTIONS.forEach((src) => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = 'avatar';
+      img.className = 'avatar-option' + (src === currentAvatar ? ' selected' : '');
+      img.dataset.avatar = src;
+      frag.appendChild(img);
+    });
+    $container.append(frag);
+  }
+
+  /** Returns the current user's own avatar path. */
+  function getAvatar() {
+    return ownAvatar;
+  }
+
+  /** Updates the in-memory avatar (call after the server acknowledges the change). */
+  function setAvatar(newAvatar) {
+    ownAvatar = newAvatar;
+  }
+
   // ── Initialise (called by socket-chat.js) ───────────────────────────────
 
   function init(params) {
     nombre = params.nombre;
-    sala   = params.sala;
+    sala = params.sala;
+    ownAvatar = params.avatar || 'assets/images/users/1.jpg';
 
-    $divUsuarios     = $('#divUsuarios');
-    $formEnviar      = $('#formEnviar');
-    $txtMensaje      = $('#txtMensaje');
-    $divChatbox      = $('#divChatbox');
-    $titleChat       = $('#titleChat');
+    $divUsuarios = $('#divUsuarios');
+    $formEnviar = $('#formEnviar');
+    $txtMensaje = $('#txtMensaje');
+    $divChatbox = $('#divChatbox');
+    $titleChat = $('#titleChat');
     $typingIndicator = $('#typingIndicator');
 
     renderTitle();
@@ -353,6 +399,9 @@ const ChatUI = (() => {
     scrollBottom,
     scrollToBottom,
     getPrivateTarget,
+    populateAvatarPicker,
+    getAvatar,
+    setAvatar,
     get $formEnviar() { return $formEnviar; },
     get $txtMensaje() { return $txtMensaje; },
   };

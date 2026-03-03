@@ -3,7 +3,7 @@
 const { UserManager } = require('../classes/UserManager');
 const { MessageHistory } = require('../classes/MessageHistory');
 const { crearMensaje } = require('../utils/messageUtils');
-const { validateJoinPayload, validateMessage } = require('../utils/sanitize');
+const { validateJoinPayload, validateMessage, validateAvatarPayload, DEFAULT_AVATAR } = require('../utils/sanitize');
 const logger = require('../utils/logger');
 
 /** @type {Map<string, ReturnType<typeof setTimeout>>} socket id → typing timeout */
@@ -39,10 +39,11 @@ function registerSocketHandlers(io) {
         return callback({ error: true, mensaje: 'Ya estás en el chat.' });
       }
 
-      userManager.addUser(socket.id, nombre, sala);
+      const { avatar } = sanitized;
+      userManager.addUser(socket.id, nombre, sala, avatar);
       socket.join(sala);
 
-      logger.info(`User "${nombre}" joined room "${sala}" (${socket.id})`);
+      logger.info(`User "${nombre}" joined room "${sala}" (${socket.id})`);  
 
       const usersInRoom = userManager.getUsersByRoom(sala);
       const history = messageHistory.getByRoom(sala);
@@ -73,7 +74,7 @@ function registerSocketHandlers(io) {
           callback({ error: true, mensaje: errors.join(' ') });
       }
 
-      const mensaje = crearMensaje(user.nombre, sanitized.mensaje, 'public');
+      const mensaje = crearMensaje(user.nombre, sanitized.mensaje, 'public', user.avatar);
       messageHistory.add(user.sala, mensaje);
 
       socket.to(user.sala).emit('crearMensaje', mensaje);
@@ -108,12 +109,42 @@ function registerSocketHandlers(io) {
           callback({ error: true, mensaje: 'El usuario ya no está conectado.' });
       }
 
-      const mensaje = crearMensaje(sender.nombre, sanitized.mensaje, 'private');
-      io.to(data.para).emit('mensajePrivado', { ...mensaje, de: sender.nombre });
+      const mensaje = crearMensaje(sender.nombre, sanitized.mensaje, 'private', sender.avatar);
+      io.to(data.para).emit('mensajePrivado', { ...mensaje, de: sender.nombre, avatar: sender.avatar });
 
       logger.debug(`Private: ${sender.nombre} → ${recipient.nombre}: ${sanitized.mensaje}`);
 
       if (typeof callback === 'function') callback(mensaje);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // UPDATE AVATAR
+    // ─────────────────────────────────────────────────────────────
+    socket.on('actualizarAvatar', (data, callback) => {
+      const user = userManager.getUser(socket.id);
+
+      if (!user) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: 'No autenticado.' });
+      }
+
+      const { isValid, error, avatar } = validateAvatarPayload(data);
+
+      if (!isValid) {
+        return typeof callback === 'function' &&
+          callback({ error: true, mensaje: error });
+      }
+
+      userManager.updateAvatar(socket.id, avatar);
+      logger.info(`User "${user.nombre}" updated avatar → ${avatar}`);
+
+      const systemMsg = crearMensaje('Admin', `${user.nombre} actualizó su foto de perfil`, 'system', DEFAULT_AVATAR);
+      messageHistory.add(user.sala, systemMsg);
+
+      socket.to(user.sala).emit('crearMensaje', systemMsg);
+      socket.to(user.sala).emit('listaPersonas', userManager.getUsersByRoom(user.sala));
+
+      if (typeof callback === 'function') callback({ error: false, avatar });
     });
 
     // ─────────────────────────────────────────────────────────────

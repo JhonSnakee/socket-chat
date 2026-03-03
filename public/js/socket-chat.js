@@ -1,4 +1,4 @@
-/* global io, ChatUI */
+/* global $, io, ChatUI */
 'use strict';
 
 /**
@@ -13,14 +13,17 @@
   const params = new URLSearchParams(window.location.search);
   const nombre = (params.get('nombre') || '').trim();
   const sala   = (params.get('sala')   || '').trim();
-
+  const DEFAULT_AVATAR = 'assets/images/users/1.jpg';
+  // Avatar is never passed via URL (base64 data URLs would cause HTTP 431).
+  // Read exclusively from localStorage, falling back to the default preset.
+  let avatar = localStorage.getItem('sc_avatar') || DEFAULT_AVATAR;
   if (!nombre || !sala) {
     window.location.replace('index.html');
     return;
   }
 
   // ── Initialise the UI module ─────────────────────────────────────────────
-  ChatUI.init({ nombre, sala });
+  ChatUI.init({ nombre, sala, avatar });
 
   // ── Connect to Socket.IO ─────────────────────────────────────────────────
   const socket = io({
@@ -82,7 +85,7 @@
   // ── Socket events ────────────────────────────────────────────────────────
 
   socket.on('connect', () => {
-    socket.emit('entrarChat', { nombre, sala }, (res) => {
+    socket.emit('entrarChat', { nombre, sala, avatar }, (res) => {
       if (res && res.error) {
         alert(`No pudiste unirte al chat: ${res.mensaje}`);
         window.location.replace('index.html');
@@ -156,5 +159,18 @@
 
   socket.on('dejóDeEscribir', () => {
     ChatUI.showTyping(null);
+  });
+
+  // ── Avatar change (triggered by chat-init.js via custom event) ────────
+  $(document).on('chatUI:avatarSelected', function (e, newAvatar) {
+    avatar = newAvatar;
+    localStorage.setItem('sc_avatar', newAvatar);
+    ChatUI.setAvatar(newAvatar);
+
+    socket.emit('actualizarAvatar', { avatar: newAvatar }, (res) => {
+      if (res && res.error) {
+        console.warn('Avatar update failed:', res.mensaje);
+      }
+    });
   });
 })();

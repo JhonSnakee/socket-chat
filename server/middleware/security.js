@@ -23,10 +23,15 @@ const helmetMiddleware = helmet({
       styleSrc: [
         "'self'",
         'https://maxcdn.bootstrapcdn.com',
+        'https://fonts.googleapis.com',
         "'unsafe-inline'",
       ],
+      fontSrc: [
+        "'self'",
+        'https://fonts.gstatic.com',
+      ],
       imgSrc: ["'self'", 'data:', 'https://images.vexels.com'],
-      connectSrc: ["'self'", 'ws:', 'wss:'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https://maxcdn.bootstrapcdn.com'],
     },
   },
 });

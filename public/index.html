@@ -6,7 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Sala de chat en tiempo real" />
-  <link rel="icon" type="image/png" href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png" />
+  <link rel="icon" type="image/png"
+    href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png" />
   <title>Socket Chat – Ingresar</title>
 
   <!-- Bootstrap -->
@@ -42,33 +43,45 @@
 
             <div class="form-group">
               <div class="col-xs-12">
-                <input
-                  id="inputNombre"
-                  class="form-control"
-                  type="text"
-                  placeholder="Nombre de usuario"
-                  name="nombre"
-                  maxlength="30"
-                  required
-                  autocomplete="nickname"
-                />
+                <input id="inputNombre" class="form-control" type="text" placeholder="Nombre de usuario" name="nombre"
+                  maxlength="30" required autocomplete="nickname" />
                 <small id="errorNombre" class="form-text text-danger field-error"></small>
               </div>
             </div>
 
             <div class="form-group">
               <div class="col-xs-12">
-                <input
-                  id="inputSala"
-                  class="form-control"
-                  type="text"
-                  placeholder="Nombre de la sala"
-                  name="sala"
-                  maxlength="30"
-                  required
-                  autocomplete="off"
-                />
+                <input id="inputSala" class="form-control" type="text" placeholder="Nombre de la sala" name="sala"
+                  maxlength="30" required autocomplete="off" />
                 <small id="errorSala" class="form-text text-danger field-error"></small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="col-xs-12">
+                <p class="avatar-picker-label">Elige tu avatar</p>
+                <div class="avatar-grid" id="avatarPicker">
+                  <img class="avatar-option" src="assets/images/users/1.jpg" data-avatar="assets/images/users/1.jpg"
+                    alt="Avatar 1" />
+                  <img class="avatar-option" src="assets/images/users/d1.jpg" data-avatar="assets/images/users/d1.jpg"
+                    alt="Avatar 2" />
+                  <img class="avatar-option" src="assets/images/users/d2.jpg" data-avatar="assets/images/users/d2.jpg"
+                    alt="Avatar 3" />
+                  <img class="avatar-option" src="assets/images/users/d3.jpg" data-avatar="assets/images/users/d3.jpg"
+                    alt="Avatar 4" />
+                  <img class="avatar-option" src="assets/images/users/d4.jpg" data-avatar="assets/images/users/d4.jpg"
+                    alt="Avatar 5" />
+                  <img class="avatar-option" src="assets/images/users/d5.jpg" data-avatar="assets/images/users/d5.jpg"
+                    alt="Avatar 6" />
+                  <img class="avatar-option" src="assets/images/users/d6.png"
+                    data-avatar="assets/images/users/d6.png" alt="Avatar 7" />
+                  <!-- Upload tile: clicking opens the hidden file input -->
+                  <label class="avatar-option avatar-upload-btn" for="avatarUpload" title="Subir mi foto">
+                    <i class="fa fa-upload"></i>
+                  </label>
+                </div>
+                <input type="file" id="avatarUpload" accept="image/jpeg,image/png,image/gif,image/webp"
+                  class="d-none" />
               </div>
             </div>
 
@@ -92,4 +105,5 @@
   <script src="js/login.js"></script>
 
 </body>
+
 </html>

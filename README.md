@@ -154,10 +154,6 @@ GET /health
 
 ---
 
-## Author
-
-> [@JhonSnakee](https://github.com/JhonSnakee)
-
 | Dev tool | Nodemon |
 
 ## Estructura del proyecto
