@@ -1,93 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- Tell the browser to be responsive to screen width -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <!-- Favicon icon -->
-    <link rel="icon" type="image/jpg" href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png" />
-    <title>Sala de Chat</title>
-    <!-- Bootstrap Core CSS -->
-    <link href="assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <!-- page css -->
-    <link href="css/pages/login-register-lock.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="css/style.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Sala de chat en tiempo real" />
+  <link rel="icon" type="image/png" href="https://images.vexels.com/media/users/3/139911/isolated/preview/1afb4038427b2bd8edd275940aea269d-chat-service-icon-by-vexels.png" />
+  <title>Socket Chat – Ingresar</title>
 
-    <!-- You can change the theme colors from here -->
-    <link href="css/colors/default-dark.css" id="theme" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+  <!-- Bootstrap -->
+  <link href="assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Page CSS -->
+  <link href="css/pages/login-register-lock.css" rel="stylesheet" />
+  <!-- Theme -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/colors/default-dark.css" id="theme" rel="stylesheet" />
+  <!-- Spinner -->
+  <link href="css/spinners.css" rel="stylesheet" />
+  <!-- Login page custom -->
+  <link href="css/login.css" rel="stylesheet" />
 </head>
 
 <body class="card-no-border">
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
-    <!-- ============================================================== -->
-    <div class="preloader">
-        <div class="loader">
-            <div class="loader__figure"></div>
-            <p class="loader__label">Cargando Chat...</p>
-        </div>
+
+  <!-- Preloader -->
+  <div class="preloader">
+    <div class="loader">
+      <div class="loader__figure"></div>
+      <p class="loader__label">Cargando…</p>
     </div>
-    <!-- ============================================================== -->
-    <!-- Main wrapper - style you can find in pages.scss -->
-    <!-- ============================================================== -->
-    <section id="wrapper">
-        <div class="login-register" style="background-image:url(../assets/images/background/login-register.jpg);">
-            <div class="login-box card">
-                <div class="card-body">
-                    <form class="form-horizontal form-material" id="loginform" action="chat.html">
-                        <h3 class="box-title m-b-20">Ingresar al Chat</h3>
-                        <div class="form-group ">
-                            <div class="col-xs-12">
-                                <input class="form-control" type="text" required="" placeholder="Nombre de usuario" name="nombre"> </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-xs-12">
-                                <input class="form-control" type="text" required="" placeholder="Sala de chat" name="sala"> </div>
-                        </div>
+  </div>
 
-                        <div class="form-group text-center">
-                            <div class="col-xs-12 p-b-20">
-                                <button class="btn btn-block btn-lg btn-info btn-rounded" type="submit">Ingresar al chat</button>
-                            </div>
-                        </div>
-                    </form>
+  <section id="wrapper">
+    <div class="login-register login-bg">
+      <div class="login-box card">
+        <div class="card-body">
 
-                </div>
+          <form id="loginform" novalidate>
+            <h3 class="box-title m-b-20">Ingresar al Chat</h3>
+
+            <div class="form-group">
+              <div class="col-xs-12">
+                <input
+                  id="inputNombre"
+                  class="form-control"
+                  type="text"
+                  placeholder="Nombre de usuario"
+                  name="nombre"
+                  maxlength="30"
+                  required
+                  autocomplete="nickname"
+                />
+                <small id="errorNombre" class="form-text text-danger field-error"></small>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- ============================================================== -->
-    <!-- All Jquery -->
-    <!-- ============================================================== -->
-    <script src="../assets/plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap tether Core JavaScript -->
-    <script src="../assets/plugins/bootstrap/js/popper.min.js"></script>
-    <script src="../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
-    <!--Custom JavaScript -->
-    <script type="text/javascript">
-        $(function() {
-            $(".preloader").fadeOut();
-        });
-        $(function() {
-            $('[data-toggle="tooltip"]').tooltip()
-        });
-    </script>
+            <div class="form-group">
+              <div class="col-xs-12">
+                <input
+                  id="inputSala"
+                  class="form-control"
+                  type="text"
+                  placeholder="Nombre de la sala"
+                  name="sala"
+                  maxlength="30"
+                  required
+                  autocomplete="off"
+                />
+                <small id="errorSala" class="form-text text-danger field-error"></small>
+              </div>
+            </div>
+
+            <div class="form-group text-center">
+              <div class="col-xs-12 p-b-20">
+                <button type="submit" class="btn btn-block btn-lg btn-info btn-rounded">
+                  Ingresar al chat
+                </button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="assets/plugins/jquery/jquery.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/popper.min.js"></script>
+  <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+  <script src="js/login.js"></script>
 
 </body>
-
 </html>

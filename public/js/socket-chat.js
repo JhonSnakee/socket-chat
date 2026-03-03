@@ -1,54 +1,160 @@
-var socket = io();
+/* global io, ChatUI */
+'use strict';
 
-var params = new URLSearchParams(window.location.search);
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Socket Module  –  manages the Socket.IO connection and event bus.
+ *
+ * Works in tandem with ChatUI (socket-chat-jquery.js).
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+(function () {
+  // ── Read user credentials from URL query string ─────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const nombre = (params.get('nombre') || '').trim();
+  const sala   = (params.get('sala')   || '').trim();
 
-if (!params.has('nombre') || !params.has('sala')) {
-    window.location = 'index.html';
-    throw new Error('El nombre y sala son necesarios');
-}
+  if (!nombre || !sala) {
+    window.location.replace('index.html');
+    return;
+  }
 
-var usuario = {
-    nombre: params.get('nombre'),
-    sala: params.get('sala')
-};
+  // ── Initialise the UI module ─────────────────────────────────────────────
+  ChatUI.init({ nombre, sala });
 
+  // ── Connect to Socket.IO ─────────────────────────────────────────────────
+  const socket = io({
+    reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
+  });
 
+  // ── Typing debounce ──────────────────────────────────────────────────────
+  let typingTimer = null;
+  const TYPING_DEBOUNCE_MS = 800;
 
-socket.on('connect', function() {
-    console.log('Conectado al servidor');
+  ChatUI.$txtMensaje.on('input', () => {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      socket.emit('escribiendo');
+    }, TYPING_DEBOUNCE_MS);
+  });
 
-    socket.emit('entrarChat', usuario, function(resp) {
-        // console.log('Usuarios conectados', resp);
-        renderizarUsuarios(resp);
-        renderizarTitulo();
+  // ── Form submit: send message or private message ─────────────────────────
+  ChatUI.$formEnviar.on('submit', (e) => {
+    e.preventDefault();
+
+    const text = ChatUI.$txtMensaje.val().trim();
+    if (!text) return;
+
+    const privateTarget = ChatUI.getPrivateTarget();
+
+    if (privateTarget) {
+      // Send private message
+      socket.emit(
+        'mensajePrivado',
+        { para: privateTarget, mensaje: text },
+        (res) => {
+          if (res && res.error) {
+            console.warn('Error mensaje privado:', res.mensaje);
+            return;
+          }
+          // Show own outgoing private message
+          ChatUI.renderMessage({ ...res, nombre, tipo: 'private', de: nombre }, true);
+          ChatUI.scrollBottom();
+        }
+      );
+    } else {
+      // Send public message
+      socket.emit('crearMensaje', { mensaje: text }, (res) => {
+        if (res && res.error) {
+          console.warn('Error al enviar mensaje:', res.mensaje);
+          return;
+        }
+        ChatUI.$txtMensaje.val('').focus();
+        ChatUI.renderMessage(res, true);
+        ChatUI.scrollBottom();
+      });
+    }
+
+    ChatUI.$txtMensaje.val('').focus();
+  });
+
+  // ── Socket events ────────────────────────────────────────────────────────
+
+  socket.on('connect', () => {
+    socket.emit('entrarChat', { nombre, sala }, (res) => {
+      if (res && res.error) {
+        alert(`No pudiste unirte al chat: ${res.mensaje}`);
+        window.location.replace('index.html');
+        return;
+      }
+
+      // Render history and current user list
+      if (res.historial && res.historial.length) {
+        ChatUI.renderHistory(res.historial);
+        ChatUI.scrollToBottom();
+      }
+
+      ChatUI.renderUsers(res.usuarios || []);
     });
+  });
 
-});
+  socket.on('disconnect', (reason) => {
+    console.warn('Disconnected:', reason);
+    ChatUI.renderMessage(
+      {
+        nombre: 'Admin',
+        mensaje: 'Conexión perdida. Intentando reconectar…',
+        fecha: Date.now(),
+        tipo: 'system',
+      },
+      false
+    );
+  });
 
-// escuchar
-socket.on('disconnect', function() {
+  socket.on('connect_error', (err) => {
+    console.error('Connection error:', err.message);
+  });
 
-    console.log('Perdimos conexión con el servidor');
+  socket.io.on('reconnect', () => {
+    ChatUI.renderMessage(
+      {
+        nombre: 'Admin',
+        mensaje: 'Reconectado al servidor.',
+        fecha: Date.now(),
+        tipo: 'system',
+      },
+      false
+    );
+  });
 
-});
+  socket.io.on('reconnect_failed', () => {
+    alert('No se pudo reconectar al servidor. Por favor recarga la página.');
+  });
 
-// Escuchar información
-socket.on('crearMensaje', function(mensaje) {
-    // console.log('Servidor:', mensaje);
-    renderizarMensajes(mensaje, false);
-    scrollBottom();
-});
+  // ── Incoming public message ──────────────────────────────────────────────
+  socket.on('crearMensaje', (mensaje) => {
+    ChatUI.renderMessage(mensaje, false);
+    ChatUI.scrollBottom();
+  });
 
-// Escuchar cambios de usuarios
-// cuando un usuario entra o sale del chat
-socket.on('listaPersonas', function(personas) {
-    // console.log(personas);
-    renderizarUsuarios(personas);
-});
+  // ── Incoming private message ─────────────────────────────────────────────
+  socket.on('mensajePrivado', (mensaje) => {
+    ChatUI.renderMessage({ ...mensaje, tipo: 'private' }, false);
+    ChatUI.scrollBottom();
+  });
 
-// Mensajes privados
-socket.on('mensajePrivado', function(mensaje) {
+  // ── Room user list updated ───────────────────────────────────────────────
+  socket.on('listaPersonas', (personas) => {
+    ChatUI.renderUsers(personas);
+  });
 
-    console.log('Mensaje Privado:', mensaje);
+  // ── Typing indicators ────────────────────────────────────────────────────
+  socket.on('escribiendo', ({ nombre: typer }) => {
+    if (typer !== nombre) ChatUI.showTyping(typer);
+  });
 
-});
+  socket.on('dejóDeEscribir', () => {
+    ChatUI.showTyping(null);
+  });
+})();

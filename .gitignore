@@ -1,36 +1,44 @@
-# Created by https://www.toptal.com/developers/gitignore/api/angular
-# Edit at https://www.toptal.com/developers/gitignore?templates=angular
-
-### Angular ###
-## Angular ##
-# compiled output
-dist/
-tmp/
-app/**/*.js
-app/**/*.js.map
-
-# dependencies
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
 bower_components/
 
-# IDEs and editors
-.idea/
+# ── Environment variables (NEVER commit secrets) ──────────────────────────────
+.env
+.env.local
+.env.*.local
 
-# misc
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+tmp/
+build/
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+coverage/
+
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store/
+Thumbs.db
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
 .sass-cache/
 connect.lock/
-coverage/
 libpeerconnection.log/
-npm-debug.log
 testem.log
 typings/
 .angular/
-
-# e2e
+app/**/*.js
+app/**/*.js.map
 e2e/*.js
 e2e/*.map
-
-# System Files
-.DS_Store/
-
-# End of https://www.toptal.com/developers/gitignore/api/angular

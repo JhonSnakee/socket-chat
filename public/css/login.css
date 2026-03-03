@@ -1,0 +1,11 @@
+/* ── Login page – custom styles ───────────────────────────────────────────── */
+
+/* Background image for the full-page login wrapper */
+.login-bg {
+  background-image: url('../assets/images/background/login-register.jpg');
+}
+
+/* Error messages are hidden by default; JS calls .show()/.hide() on them */
+.field-error {
+  display: none;
+}

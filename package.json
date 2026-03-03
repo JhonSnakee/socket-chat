@@ -1,17 +1,31 @@
 {
-    "name": "10-socketchat",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
+    "name": "socket-chat",
+    "version": "2.0.0",
+    "description": "Real-time multi-room chat built with Node.js, Express and Socket.IO",
+    "main": "server/server.js",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "nodemon server/server.js"
+        "start": "node server/server.js",
+        "dev": "nodemon server/server.js",
+        "lint": "echo \"No linter configured – add eslint for full enforcement\"",
+        "test": "echo \"No tests yet – add jest/mocha for unit coverage\""
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "cors": "^2.8.6",
+        "dotenv": "^17.3.1",
         "express": "^4.16.3",
-        "nodemon": "^2.0.6",
-        "socket.io": "^3.0.3"
+        "express-rate-limit": "^8.2.1",
+        "helmet": "^8.1.0",
+        "morgan": "^1.10.1",
+        "socket.io": "^4.8.3",
+        "validator": "^13.15.26",
+        "winston": "^3.19.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.14"
     }
 }
